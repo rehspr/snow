@@ -4,34 +4,55 @@
   <meta charset="utf-8" />
   <title>Projects</title>
 
-  <!-- Background color and layout -->
+  <!-- Matching nav bar and styling -->
   <style>
-    body {
+    * {
       margin: 0;
       padding: 0;
-      background-color: #000;
-      color: white;
-      font-family: Arial, sans-serif;
+      box-sizing: border-box;
     }
 
+    body, html {
+      height: 100%;
+      background-color: #000;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    /* Same nav as index.html */
     nav {
-      padding: 15px;
-      background: #111;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 1;
     }
 
     nav a {
       margin-right: 15px;
-      color: #00f;
+      color: #fff;
       text-decoration: none;
       font-weight: bold;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 6px 10px;
+      border-radius: 4px;
     }
 
     nav a:hover {
-      text-decoration: underline;
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    embed {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      z-index: 0;
     }
   </style>
 
-  <!-- Sketch setup -->
+  <!-- Sketch dependencies -->
   <script src="https://openprocessing.org/openprocessing_sketch.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.2/lib/p5.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.2/lib/addons/p5.sound.min.js"></script>
@@ -41,16 +62,15 @@
 
 <body>
 
-  <!-- Navigation Menu -->
+  <!-- Nav bar -->
   <nav>
     <a href="index.html">Home</a>
     <a href="about.html">About</a>
     <a href="projects.html">Projects</a>
   </nav>
 
-  <!-- Embed sketch -->
-  <embed src="https://html.cafe/xa4dd0de0" width="1920" height="1080" />
+  <!-- Fullscreen embed -->
+  <embed src="https://html.cafe/xa4dd0de0" />
 
 </body>
 </html>
-
