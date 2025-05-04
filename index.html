@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Home</title>
   <meta charset="utf-8" />
-  <link rel="stylesheet" type="text/css" href="style.css">
+  <title>How to Play Minecraft</title>
   <style>
     * {
       margin: 0;
@@ -15,9 +14,9 @@
       height: 100%;
       font-family: Arial, sans-serif;
       color: white;
-      background-color: black;
     }
 
+    /* Background video setup */
     #bg-video {
       position: fixed;
       top: 0;
@@ -26,6 +25,7 @@
       min-height: 100%;
       object-fit: cover;
       z-index: -1;
+      background-color: black;
     }
 
     nav {
@@ -81,7 +81,7 @@
       border: 1px solid #444;
       border-radius: 5px;
       cursor: pointer;
-      margin: 10px 5px 0;
+      margin-top: 10px;
       transition: background-color 0.3s ease, color 0.3s ease;
     }
 
@@ -95,17 +95,20 @@
 
 <body>
 
+  <!-- Background video -->
   <video id="bg-video" autoplay muted loop playsinline>
     <source src="falling_particles_looping.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
 
+  <!-- Navigation Menu -->
   <nav>
     <a href="index.html">Home</a>
     <a href="about.html">About</a>
     <a href="projects.html">Projects</a>
   </nav>
 
+  <!-- Centered content -->
   <div class="content">
     <h2>How to Play Minecraft</h2>
     <ol>
@@ -120,14 +123,15 @@
     </div>
 
     <div class="cloak-button">
-      <button onclick="cloak()">
+      <button onclick="cloakTab()">
         Press To Cloak Tab (makes it so teachers can't see it on GoGuardian, IT WILL SHOW THEM THE LAST TAB YOU WERE ON THAT WAS NOT CLOAKED!)
       </button>
     </div>
   </div>
 
+  <!-- Cloaking script -->
   <script>
-    function cloak() {
+    function cloakTab() {
       const win = window.open();
       win.document.write(`
         <!DOCTYPE html>
