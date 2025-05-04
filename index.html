@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>How to Play Minecraft</title>
-  <link rel="stylesheet" type="text/css" href="style.css">
+  <meta charset="UTF-8">
+  <title>Update Log</title>
+  <link rel="stylesheet" href="style.css">
   <style>
     * {
       margin: 0;
@@ -33,7 +33,7 @@
       position: absolute;
       top: 20px;
       left: 20px;
-      z-index: 1;
+      z-index: 1001;
     }
 
     nav a {
@@ -50,8 +50,7 @@
       background: rgba(255, 255, 255, 0.3);
     }
 
-    /* Centered text and buttons */
-    .content {
+    .log-container {
       position: absolute;
       top: 50%;
       left: 50%;
@@ -61,90 +60,80 @@
       border-radius: 12px;
       text-align: center;
       max-width: 600px;
+      z-index: 2;
     }
 
-    .content h2 {
+    .log-container h2 {
       margin-bottom: 15px;
     }
 
-    .content ol {
+    .log-container ul {
       text-align: left;
-      margin: 0 auto 20px;
+      list-style-position: inside;
     }
 
-    .enter-button a,
-    .cloak-button button {
-      background-color: black;
+    .proxy-button {
+      margin-top: 20px;
+    }
+
+    .proxy-button button {
+      background-color: #333;
       color: white;
       padding: 10px 20px;
-      text-decoration: none;
-      font-weight: bold;
+      border: none;
       border-radius: 5px;
-      border: 2px solid white;
+      font-weight: bold;
       cursor: pointer;
-      margin-top: 10px;
-      transition: background-color 0.3s, color 0.3s;
     }
 
-    .enter-button a:hover,
-    .cloak-button button:hover {
-      background-color: white;
-      color: black;
+    .proxy-button button:hover {
+      background-color: #555;
+    }
+
+    #proxy-container {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.95);
+      z-index: 1000;
+    }
+
+    #proxy-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
     }
   </style>
 </head>
-
 <body>
 
-  <!-- Background video -->
   <video id="bg-video" autoplay muted loop playsinline>
     <source src="falling_particles_looping.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
 
-  <!-- Navigation Menu -->
   <nav>
     <a href="index.html">Home</a>
     <a href="about.html">About</a>
     <a href="projects.html">Projects</a>
   </nav>
 
-  <!-- Overlay content -->
-  <div class="content">
-    <h2>How to Play Minecraft</h2>
-    <ol>
-      <li>Click about:blank cloak</li>
-      <li>Press Search History Byp@ss</li>
-      <li>Search <strong>eagle craft x13</strong></li>
-      <li>Click the <strong>WASM 1.8.8</strong> version</li>
-    </ol>
-
-    <div class="enter-button">
-      <a href="projects.html">Click to Enter</a>
-    </div>
-
-    <div class="cloak-button">
-      <button onclick="cloakTab()">Press to Cloak Tab (makes it so teachers can't see it on GoGuardian, IT WILL SHOW THEM THE LAST TAB YOU WERE ON THAT WAS NOT CLOAKED!)</button>
+  <div class="log-container">
+    <h2>Update Log</h2>
+    <ul>
+      <li><strong>1.01</strong> - Added about:blank cloak</li>
+    </ul>
+    <div class="proxy-button">
+      <button onclick="document.getElementById('proxy-container').style.display='block'">Click to Open Proxy</button>
     </div>
   </div>
 
-  <script>
-    function cloakTab() {
-      var win = window.open();
-      var url = "https://rehspr.github.io/snow/index.html"; // Or any other site you want to cloak with
-      if (url) {
-        var iframe = document.createElement("iframe");
-        iframe.style.border = "none";
-        iframe.style.width = "100%";
-        iframe.style.height = "100%";
-        iframe.style.margin = "0";
-        win.document.body.style.margin = "0";
-        win.document.body.style.height = "100vh";
-        win.document.body.appendChild(iframe);
-        iframe.src = url;
-      }
-    }
-  </script>
+  <div id="proxy-container">
+    <iframe src="https://l.lightningbypass.co"></iframe>
+  </div>
 
 </body>
 </html>
