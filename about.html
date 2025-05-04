@@ -1,59 +1,96 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <title>Update Log</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    /* Background video setup */
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      min-width: 100%;
+      min-height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* Navigation menu */
+    nav {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 1;
+    }
+
+    nav a {
+      margin-right: 15px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 6px 10px;
+      border-radius: 4px;
+    }
+
+    nav a:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .log-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.6);
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 600px;
+    }
+
+    .log-container h2 {
+      margin-bottom: 15px;
+    }
+
+    .log-container ul {
+      text-align: left;
+      list-style-position: inside;
+    }
+  </style>
 </head>
 <body>
-<!-- SUBSCRIBE TO IRWINTECH ON YOUTUBE HTTPS://YOUTUBE.COM/C/IRWINTECH -->
 
-<button class="button-16" onclick="myFunction()">Press This For Redirect</button>
+  <video id="bg-video" autoplay muted loop playsinline>
+    <source src="falling_particles_looping.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
 
-<script>
-function myFunction() {
-var win = window.open()
-//YOU CAN REPLACE THE LINK BELOW WITH ANYTHING YOU WANT! 
-var url = "https://rehspr.github.io/snow/index.html"
-if (url) {
-var iframe = document.createElement("iframe")
-iframe.style.border = "none";
-iframe.style.width = "100%";
-iframe.style.height = "100%"
-iframe.style.margin = "0";
-iframe.src = url;
-win.document.body.appendChild(iframe);
-}
-}
-</script>
-<style>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="projects.html">Projects</a>
+  </nav>
 
+  <div class="log-container">
+    <h2>Update Log</h2>
+    <ul>
+      <li><strong>1.01</strong> - Added about:blank cloak</li>
+    </ul>
+  </div>
 
-.button-16 {
-  background-color: #f8f9fa;
-  border: 1px solid #f8f9fa;
-  border-radius: 4px;
-  color: #3c4043;
-  cursor: pointer;
-  font-family: arial,sans-serif;
-  font-size: 14px;
-  height: 36px;
-  line-height: 27px;
-  min-width: 54px;
-  padding: 0 16px;
-  text-align: center;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-  white-space: pre;
-}
-
-.button-16:hover {
-  border-color: #dadce0;
-  box-shadow: rgba(0, 0, 0, .1) 0 1px 1px;
-  color: #202124;
-}
-
-.button-16:focus {
-  border-color: #4285f4;
-  outline: none;
-} 
-</style>
 </body>
 </html>
