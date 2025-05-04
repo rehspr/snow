@@ -1,122 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <title>How to Play Minecraft</title>
-  <link rel="stylesheet" type="text/css" href="style.css">
   <style>
-    * {
+    html, body {
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-    }
-
-    body, html {
       height: 100%;
       font-family: Arial, sans-serif;
       color: white;
+      text-align: center;
+      background: black;
+      overflow: hidden;
     }
 
-    /* Background video setup */
-    #bg-video {
+    video#bgvid {
       position: fixed;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       min-width: 100%;
       min-height: 100%;
       object-fit: cover;
       z-index: -1;
     }
 
-    /* Navigation menu */
-    nav {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      z-index: 1;
-    }
-
-    nav a {
-      margin-right: 15px;
-      color: #fff;
-      text-decoration: none;
-      font-weight: bold;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 6px 10px;
-      border-radius: 4px;
-    }
-
-    nav a:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-
-    /* Centered text and button */
     .content {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.6);
-      padding: 30px;
-      border-radius: 12px;
-      text-align: center;
-      max-width: 600px;
+      position: relative;
+      top: 20%;
     }
 
-    .content h2 {
-      margin-bottom: 15px;
+    h1 {
+      font-size: 2em;
     }
 
-    .content ol {
+    ol {
       text-align: left;
-      margin: 0 auto 20px;
+      display: inline-block;
+      margin: 20px auto;
+      font-size: 18px;
     }
 
-    .enter-button a {
-      background-color: #00aaff;
-      color: white;
+    .btn {
+      margin-top: 20px;
       padding: 10px 20px;
-      text-decoration: none;
-      font-weight: bold;
+      font-size: 16px;
+      border: none;
       border-radius: 5px;
+      background-color: #ffffffcc;
+      color: black;
+      cursor: pointer;
     }
 
-    .enter-button a:hover {
-      background-color: #0077cc;
+    .btn:hover {
+      background-color: white;
     }
   </style>
 </head>
-
 <body>
 
-  <!-- Background video -->
-  <video id="bg-video" autoplay muted loop playsinline>
+  <!-- Video Background -->
+  <video id="bgvid" autoplay loop muted>
     <source src="falling_particles_looping.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
 
-  <!-- Navigation Menu -->
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="about.html">About</a>
-    <a href="projects.html">Projects</a>
-  </nav>
-
-  <!-- Overlay content -->
   <div class="content">
-    <h2>How to Play Minecraft</h2>
+    <h1>How to play Minecraft</h1>
     <ol>
-      <li>Click about:blank cloak</li>
+      <li>Click About:Blank Cloak</li>
       <li>Press Search History Byp@ss</li>
-      <li>Search <strong>eagle craft x13</strong></li>
-      <li>Click the <strong>WASM 1.8.8</strong> version</li>
-      <li><strong>Don't be stupid and leak this website to everyone</strong></li>
+      <li>Search Eagle Craft X13</li>
+      <li>Click the WASM 1.8.8 version</li>
     </ol>
-    <div class="enter-button">
-      <a href="projects.html">Click to Enter</a>
-    </div>
+
+    <!-- "Click to Enter" Button -->
+    <button class="btn" onclick="location.href='projects.html'">Click to Enter</button>
+
+    <!-- About:Blank Cloak Button -->
+    <button class="btn" onclick="cloak()">Press To Cloak Tab (makes it so teachers can't see it on gogaurdian, IT WILL SHOW THEM THE LAST TAB YOU WERE ON THAT WAS NOI CLOAKED!</button>
   </div>
+
+  <script>
+    function cloak() {
+      const win = window.open();
+      win.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            html, body {
+              margin: 0;
+              padding: 0;
+              height: 100%;
+              overflow: hidden;
+              border-radius: 0;
+              background: black;
+            }
+            iframe {
+              width: 100%;
+              height: 100%;
+              border: none;
+              border-radius: 0;
+            }
+          </style>
+        </head>
+        <body>
+          <iframe src="https://rehspr.github.io/snow/index.html"></iframe>
+        </body>
+        </html>
+      `);
+    }
+  </script>
 
 </body>
 </html>
-
