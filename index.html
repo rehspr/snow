@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -196,7 +196,6 @@
       <button onclick="cloakTab()">Press to Cloak Tab</button>
     </div>
 
-    <!-- 🔹 Chat Room UI -->
     <div class="chat-container">
       <button class="admin-btn" onclick="document.getElementById('admin-modal').style.display='flex'">⚙️ Admin Panel</button>
       <h3 style="text-align:center;">💬 Live Chat Room</h3>
@@ -225,7 +224,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded, onChildChanged, remove, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, remove, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCsACxbiTQf6D6KrCS6vfGfaGBkTne9sTk",
@@ -252,7 +251,7 @@
       if (isAdmin) {
         const controls = document.createElement("div");
         controls.className = "admin-controls";
-        controls.innerHTML = `
+        controls.innerHTML = ` 
           <button class="edit-btn" onclick="editMessage('${key}')">Edit</button>
           <button class="delete-btn" onclick="deleteMessage('${key}')">Delete</button>
         `;
@@ -271,14 +270,18 @@
       }
     });
 
-    // 🔁 Update message in UI when edited
     onChildChanged(messagesRef, (snapshot) => {
       const key = snapshot.key;
       const updatedText = snapshot.val().text;
       const textEl = document.getElementById("text-" + key);
-      if (textEl) {
-        textEl.textContent = updatedText;
-      }
+      if (textEl) textEl.textContent = updatedText;
+    });
+
+    onChildRemoved(messagesRef, (snapshot) => {
+      const key = snapshot.key;
+      const msgDiv = document.getElementById("msg-" + key);
+      if (msgDiv) msgDiv.remove();
+      loadedMessages.delete(key);
     });
 
     window.sendMessage = function () {
@@ -298,13 +301,12 @@
         document.getElementById("admin-modal").style.display = "none";
         document.getElementById("clearBtn").style.display = "inline-block";
 
-        // Show admin controls on already loaded messages
         for (const key of loadedMessages) {
           const div = document.getElementById("msg-" + key);
           if (div && !div.querySelector(".admin-controls")) {
             const controls = document.createElement("div");
             controls.className = "admin-controls";
-            controls.innerHTML = `
+            controls.innerHTML = ` 
               <button class="edit-btn" onclick="editMessage('${key}')">Edit</button>
               <button class="delete-btn" onclick="deleteMessage('${key}')">Delete</button>
             `;
@@ -326,7 +328,17 @@
 
     window.deleteMessage = function (key) {
       if (confirm("Delete this message?")) {
+        // Remove the message from Firebase
         remove(ref(db, `messages/${key}`));
+
+        // Immediately remove it from the DOM
+        const msgDiv = document.getElementById("msg-" + key);
+        if (msgDiv) {
+          msgDiv.remove();
+        }
+
+        // Also, remove it from the loadedMessages set
+        loadedMessages.delete(key);
       }
     };
 
