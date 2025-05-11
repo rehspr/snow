@@ -225,7 +225,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded, remove, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getDatabase, ref, push, onChildAdded, onChildChanged, remove, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCsACxbiTQf6D6KrCS6vfGfaGBkTne9sTk",
@@ -242,6 +242,7 @@
     const messagesRef = ref(db, "messages");
 
     let isAdmin = false;
+    const loadedMessages = new Set();
 
     function renderMessage(key, data) {
       const msgDiv = document.createElement("div");
@@ -262,13 +263,21 @@
       document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
     }
 
-    const loadedMessages = new Set();
-
     onChildAdded(messagesRef, (snapshot) => {
       const key = snapshot.key;
       if (!loadedMessages.has(key)) {
         loadedMessages.add(key);
         renderMessage(key, snapshot.val());
+      }
+    });
+
+    // 🔁 Update message in UI when edited
+    onChildChanged(messagesRef, (snapshot) => {
+      const key = snapshot.key;
+      const updatedText = snapshot.val().text;
+      const textEl = document.getElementById("text-" + key);
+      if (textEl) {
+        textEl.textContent = updatedText;
       }
     });
 
@@ -289,13 +298,10 @@
         document.getElementById("admin-modal").style.display = "none";
         document.getElementById("clearBtn").style.display = "inline-block";
 
-        // Refresh messages with admin controls
-        const container = document.getElementById("messages");
-        const nodes = Array.from(container.children);
-        for (let div of nodes) {
-          const key = div.id.replace("msg-", "");
-          if (!div.querySelector(".admin-controls")) {
-            const text = document.getElementById("text-" + key).textContent;
+        // Show admin controls on already loaded messages
+        for (const key of loadedMessages) {
+          const div = document.getElementById("msg-" + key);
+          if (div && !div.querySelector(".admin-controls")) {
             const controls = document.createElement("div");
             controls.className = "admin-controls";
             controls.innerHTML = `
