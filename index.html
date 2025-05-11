@@ -4,25 +4,22 @@
   <meta charset="utf-8" />
   <title>How to Play Minecraft</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html, body {
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
       height: 100%;
-      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: black;
+      color: white;
     }
 
     #bg-video {
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      min-width: 100%;
+      min-height: 100%;
       object-fit: cover;
-      z-index: -1; /* Behind the content */
+      z-index: -1;
     }
 
     nav {
@@ -52,19 +49,10 @@
       border-radius: 12px;
       text-align: center;
       max-width: 600px;
-      z-index: 1;
     }
 
-    .content h2 {
-      margin-bottom: 15px;
-      color: white; /* Changed to white */
-    }
-    
-    .content ol {
-      text-align: left;
-      margin: 0 auto 20px;
-      color: white; /* Changed to white */
-    }
+    .content h2 { margin-bottom: 15px; }
+    .content ol { text-align: left; margin: 0 auto 20px; }
 
     .enter-button a,
     .cloak-button button {
@@ -96,7 +84,6 @@
       margin-right: auto;
       box-shadow: 0 0 10px rgba(255,255,255,0.1);
       position: relative;
-      z-index: 1;
     }
 
     #messages {
@@ -110,7 +97,6 @@
       white-space: pre-wrap;
       word-wrap: break-word;
       margin-bottom: 10px;
-      color: white; /* Changed to white for chat messages */
     }
 
     input, button {
@@ -172,6 +158,21 @@
       border-radius: 8px;
       width: 300px;
       text-align: center;
+      color: white; /* Set the text color to white */
+    }
+
+    #admin-modal-content input {
+      color: white; /* Input text color */
+      background: rgba(255,255,255,0.1); /* Light background for input fields */
+    }
+
+    #admin-modal-content input::placeholder {
+      color: #ccc; /* Light placeholder color */
+    }
+
+    #admin-modal-content button {
+      background: #fff;
+      color: black; /* Text color of the button */
     }
 
     #clearBtn {
@@ -182,10 +183,10 @@
     }
   </style>
 </head>
+
 <body>
   <video id="bg-video" autoplay muted loop playsinline>
     <source src="falling_particles_looping.mp4" type="video/mp4" />
-    Your browser does not support the video tag.
   </video>
 
   <nav>
@@ -266,7 +267,7 @@
       if (isAdmin) {
         const controls = document.createElement("div");
         controls.className = "admin-controls";
-        controls.innerHTML = ` 
+        controls.innerHTML = `  
           <button class="edit-btn" onclick="editMessage('${key}')">Edit</button>
           <button class="delete-btn" onclick="deleteMessage('${key}')">Delete</button>
         `;
@@ -321,7 +322,7 @@
           if (div && !div.querySelector(".admin-controls")) {
             const controls = document.createElement("div");
             controls.className = "admin-controls";
-            controls.innerHTML = ` 
+            controls.innerHTML = `
               <button class="edit-btn" onclick="editMessage('${key}')">Edit</button>
               <button class="delete-btn" onclick="deleteMessage('${key}')">Delete</button>
             `;
@@ -354,6 +355,24 @@
         loadedMessages.clear();
       }
     };
+  </script>
+
+  <script>
+    function cloakTab() {
+      const win = window.open();
+      const url = "https://rehspr.github.io/snow/index.html";
+      if (url) {
+        const iframe = document.createElement("iframe");
+        iframe.style.border = "none";
+        iframe.style.width = "100%";
+        iframe.style.height = "100%";
+        iframe.style.margin = "0";
+        win.document.body.style.margin = "0";
+        win.document.body.style.height = "100vh";
+        win.document.body.appendChild(iframe);
+        iframe.src = url;
+      }
+    }
   </script>
 </body>
 </html>
