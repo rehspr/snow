@@ -253,10 +253,17 @@
     let isAdmin = false;
     const loadedMessages = new Set();
 
+    // ✨ Input sanitization function
+    function sanitize(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
     function renderMessage(key, data) {
       const msgDiv = document.createElement("div");
       msgDiv.id = "msg-" + key;
-      msgDiv.innerHTML = `<strong>${data.name}</strong>: <span id="text-${key}">${data.text}</span>`;
+      msgDiv.innerHTML = `<strong>${sanitize(data.name)}</strong>: <span id="text-${key}">${sanitize(data.text)}</span>`;
 
       if (isAdmin) {
         const controls = document.createElement("div");
@@ -282,7 +289,7 @@
 
     onChildChanged(messagesRef, (snapshot) => {
       const key = snapshot.key;
-      const updatedText = snapshot.val().text;
+      const updatedText = sanitize(snapshot.val().text);
       const textEl = document.getElementById("text-" + key);
       if (textEl) textEl.textContent = updatedText;
     });
@@ -295,64 +302,47 @@
     });
 
     window.sendMessage = function () {
-      const name = document.getElementById("name").value.trim();
-      const text = document.getElementById("message").value.trim();
-      if (name && text) {
-        push(messagesRef, { name, text, timestamp: Date.now() });
-        document.getElementById("message").value = "";
-      }
-    };
+      const nameRaw = document.getElementById("name").value.trim();
+      const textRaw = document.getElementById("message").value.trim();
 
-    window.loginAdmin = function () {
-      const user = document.getElementById("adminUser").value;
-      const pass = document.getElementById("adminPass").value;
+      if (!nameRaw || !textRaw) return;
 
-      signInWithEmailAndPassword(auth, user, pass)
-        .then(() => {
-          isAdmin = true;
-          document.getElementById("admin-modal").style.display = "none";
-          document.getElementById("clearBtn").style.display = "inline-block";
+      const sanitizedName = sanitize(nameRaw);
+      const sanitizedText = sanitize(textRaw);
 
-          for (const key of loadedMessages) {
-            const div = document.getElementById("msg-" + key);
-            if (div && !div.querySelector(".admin-controls")) {
-              const controls = document.createElement("div");
-              controls.className = "admin-controls";
-              controls.innerHTML = ` 
-                <button class="edit-btn" onclick="editMessage('${key}')">Edit</button>
-                <button class="delete-btn" onclick="deleteMessage('${key}')">Delete</button>
-              `;
-              div.appendChild(controls);
-            }
-          }
-        })
-        .catch((error) => {
-          alert("Login failed: " + error.message);
-        });
-    };
+      push(messagesRef, {
+        name: sanitizedName,
+        text: sanitizedText
+      });
 
-    window.closeAdminModal = function () {
-      document.getElementById("admin-modal").style.display = "none";
-    };
+      document.getElementById("name").value = '';
+      document.getElementById("message").value = '';
+    }
 
-    window.clearMessages = function () {
-      if (confirm("Are you sure you want to clear all messages?")) {
-        remove(messagesRef);
-      }
-    };
-
-    window.editMessage = function (key) {
-      const newText = prompt("Edit message:");
-      if (newText !== null) {
-        update(ref(db, "messages/" + key), { text: newText });
-      }
-    };
-
-    window.deleteMessage = function (key) {
-      if (confirm("Are you sure you want to delete this message?")) {
+    function deleteMessage(key) {
+      if (confirm('Are you sure you want to delete this message?')) {
         remove(ref(db, "messages/" + key));
       }
-    };
+    }
+
+    function editMessage(key) {
+      const newText = prompt('Edit message:', document.getElementById('text-' + key).textContent);
+      if (newText !== null && newText.trim() !== "") {
+        update(ref(db, "messages/" + key), {
+          text: sanitize(newText)
+        });
+      }
+    }
+
+    function clearMessages() {
+      if (confirm('Are you sure you want to clear all messages?')) {
+        const messages = document.getElementById("messages").children;
+        for (let message of messages) {
+          const key = message.id.split("-")[1];
+          remove(ref(db, "messages/" + key));
+        }
+      }
+    }
   </script>
 </body>
 </html>
