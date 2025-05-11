@@ -12,7 +12,7 @@
 
     html, body {
       height: 100%;
-      overflow: hidden; /* Prevent scrolling */
+      overflow: hidden;
       color: white;
     }
 
@@ -23,7 +23,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      z-index: -1; /* Make sure it's behind the content */
+      z-index: -1;
     }
 
     nav {
@@ -326,35 +326,32 @@
             }
           }
         })
-        .catch(() => {
-          alert("Incorrect credentials.");
+        .catch((error) => {
+          alert("Login failed: " + error.message);
         });
-    };
-
-    window.editMessage = function (key) {
-      const current = document.getElementById("text-" + key).textContent;
-      const updated = prompt("Edit message:", current);
-      if (updated !== null) {
-        update(ref(db, `messages/${key}`), { text: updated });
-      }
-    };
-
-    window.deleteMessage = function (key) {
-      if (confirm("Delete this message?")) {
-        remove(ref(db, `messages/${key}`));
-      }
-    };
-
-    window.clearMessages = function () {
-      if (confirm("Clear all messages?")) {
-        remove(messagesRef);
-        document.getElementById("messages").innerHTML = "";
-        loadedMessages.clear();
-      }
     };
 
     window.closeAdminModal = function () {
       document.getElementById("admin-modal").style.display = "none";
+    };
+
+    window.clearMessages = function () {
+      if (confirm("Are you sure you want to clear all messages?")) {
+        remove(messagesRef);
+      }
+    };
+
+    window.editMessage = function (key) {
+      const newText = prompt("Edit message:");
+      if (newText !== null) {
+        update(ref(db, "messages/" + key), { text: newText });
+      }
+    };
+
+    window.deleteMessage = function (key) {
+      if (confirm("Are you sure you want to delete this message?")) {
+        remove(ref(db, "messages/" + key));
+      }
     };
   </script>
 </body>
