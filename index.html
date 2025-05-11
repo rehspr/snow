@@ -175,6 +175,21 @@
       background: black;
       color: white;
     }
+
+    .close-btn {
+      background: #444;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background-color 0.3s;
+    }
+
+    .close-btn:hover {
+      background-color: #777;
+    }
   </style>
 </head>
 <body>
@@ -208,10 +223,10 @@
 
     <div class="chat-container">
       <button class="admin-btn" onclick="document.getElementById('admin-modal').style.display='flex'">
-        <img src="admicon.png" alt="Admin Panel" class="admin-icon">
+        <img src="admicon.png" alt="Admin" class="admin-icon">
       </button>
       <h3 style="text-align:center; color: white;">💬 Live Chat Room</h3>
-
+      
       <div id="messages"></div>
 
       <div style="text-align: center;">
@@ -231,10 +246,10 @@
       <input id="adminUser" placeholder="Username"><br>
       <input id="adminPass" type="password" placeholder="Password"><br>
       <button onclick="loginAdmin()">Login</button>
+      <button class="close-btn" onclick="closeAdminModal()">Close</button> <!-- Close Button -->
     </div>
   </div>
 
-  <!-- Firebase and Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, remove, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
@@ -329,6 +344,10 @@
       } else {
         alert("Incorrect credentials.");
       }
+    };
+
+    window.closeAdminModal = function () {
+      document.getElementById("admin-modal").style.display = "none";
     };
 
     window.editMessage = function (key) {
