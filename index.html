@@ -13,6 +13,7 @@
     html, body {
       height: 100%;
       overflow: hidden; /* Prevent scrolling */
+      color: white;
     }
 
     #bg-video {
@@ -100,6 +101,7 @@
       white-space: pre-wrap;
       word-wrap: break-word;
       margin-bottom: 10px;
+      color: white;
     }
 
     input, button {
@@ -166,8 +168,8 @@
     #clearBtn {
       display: none;
       margin-top: 10px;
-      background: white;
-      color: black;
+      background: black;
+      color: white;
     }
   </style>
 </head>
@@ -202,8 +204,8 @@
 
     <div class="chat-container">
       <button class="admin-btn" onclick="document.getElementById('admin-modal').style.display='flex'">⚙️ Admin Panel</button>
-      <h3 style="text-align:center;">💬 Live Chat Room</h3>
-
+      <h3 style="text-align:center; color: white;">💬 Live Chat Room</h3>
+      
       <div id="messages"></div>
 
       <div style="text-align: center;">
