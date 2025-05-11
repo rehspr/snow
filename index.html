@@ -4,12 +4,15 @@
   <meta charset="utf-8" />
   <title>How to Play Minecraft</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html {
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
       height: 100%;
-      font-family: Arial, sans-serif;
-      background: black;
-      color: white;
+      overflow: hidden; /* Prevent scrolling */
     }
 
     #bg-video {
@@ -158,21 +161,6 @@
       border-radius: 8px;
       width: 300px;
       text-align: center;
-      color: white; /* Set the text color to white */
-    }
-
-    #admin-modal-content input {
-      color: white; /* Input text color */
-      background: rgba(255,255,255,0.1); /* Light background for input fields */
-    }
-
-    #admin-modal-content input::placeholder {
-      color: #ccc; /* Light placeholder color */
-    }
-
-    #admin-modal-content button {
-      background: #fff;
-      color: black; /* Text color of the button */
     }
 
     #clearBtn {
@@ -183,7 +171,6 @@
     }
   </style>
 </head>
-
 <body>
   <video id="bg-video" autoplay muted loop playsinline>
     <source src="falling_particles_looping.mp4" type="video/mp4" />
@@ -268,7 +255,7 @@
       if (isAdmin) {
         const controls = document.createElement("div");
         controls.className = "admin-controls";
-        controls.innerHTML = `  
+        controls.innerHTML = ` 
           <button class="edit-btn" onclick="editMessage('${key}')">Edit</button>
           <button class="delete-btn" onclick="deleteMessage('${key}')">Delete</button>
         `;
@@ -323,7 +310,7 @@
           if (div && !div.querySelector(".admin-controls")) {
             const controls = document.createElement("div");
             controls.className = "admin-controls";
-            controls.innerHTML = `
+            controls.innerHTML = ` 
               <button class="edit-btn" onclick="editMessage('${key}')">Edit</button>
               <button class="delete-btn" onclick="deleteMessage('${key}')">Delete</button>
             `;
@@ -356,24 +343,6 @@
         loadedMessages.clear();
       }
     };
-  </script>
-
-  <script>
-    function cloakTab() {
-      const win = window.open();
-      const url = "https://rehspr.github.io/snow/index.html";
-      if (url) {
-        const iframe = document.createElement("iframe");
-        iframe.style.border = "none";
-        iframe.style.width = "100%";
-        iframe.style.height = "100%";
-        iframe.style.margin = "0";
-        win.document.body.style.margin = "0";
-        win.document.body.style.height = "100vh";
-        win.document.body.appendChild(iframe);
-        iframe.src = url;
-      }
-    }
   </script>
 </body>
 </html>
