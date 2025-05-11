@@ -253,11 +253,18 @@
     let isAdmin = false;
     const loadedMessages = new Set();
 
-    // ✨ Input sanitization function
-    function sanitize(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
+    // ✨ Improved Input Sanitization Function
+    function sanitize(input) {
+        // Create a div to help escape the input and prevent malicious code execution
+        const div = document.createElement('div');
+        div.textContent = input;
+        let sanitizedInput = div.innerHTML;
+
+        // Optionally remove any script tags or event listeners directly in the string
+        sanitizedInput = sanitizedInput.replace(/<script.*?>.*?<\/script>/gi, '') // Remove script tags
+                                       .replace(/on\w+=".*?"/gi, ''); // Remove event attributes like onclick=""
+
+        return sanitizedInput;
     }
 
     function renderMessage(key, data) {
