@@ -256,15 +256,15 @@
     function renderMessage(key, data) {
       const msgDiv = document.createElement("div");
       msgDiv.id = "msg-" + key;
-      msgDiv.innerHTML = <strong>${data.name}</strong>: <span id="text-${key}">${data.text}</span>;
+      msgDiv.innerHTML = `<strong>${data.name}</strong>: <span id="text-${key}">${data.text}</span>`;
 
       if (isAdmin) {
         const controls = document.createElement("div");
         controls.className = "admin-controls";
-        controls.innerHTML =  
+        controls.innerHTML = ` 
           <button class="edit-btn" onclick="editMessage('${key}')">Edit</button>
           <button class="delete-btn" onclick="deleteMessage('${key}')">Delete</button>
-        ;
+        `;
         msgDiv.appendChild(controls);
       }
 
@@ -318,10 +318,10 @@
             if (div && !div.querySelector(".admin-controls")) {
               const controls = document.createElement("div");
               controls.className = "admin-controls";
-              controls.innerHTML =  
+              controls.innerHTML = ` 
                 <button class="edit-btn" onclick="editMessage('${key}')">Edit</button>
                 <button class="delete-btn" onclick="deleteMessage('${key}')">Delete</button>
-              ;
+              `;
               div.appendChild(controls);
             }
           }
