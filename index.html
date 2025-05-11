@@ -1,158 +1,277 @@
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>How to Play Minecraft</title>
-    <link rel="stylesheet" type="text/css" href="style.css" />
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+<head>
+  <meta charset="utf-8" />
+  <title>Chat with Admin Panel</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: black;
+      color: white;
+    }
 
-      body,
-      html {
-        height: 100%;
-        font-family: Arial, sans-serif;
-        color: white;
-      }
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      min-width: 100%;
+      min-height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
 
-      #bg-video {
-        position: fixed;
-        top: 0;
-        left: 0;
-        min-width: 100%;
-        min-height: 100%;
-        object-fit: cover;
-        z-index: -1;
-      }
+    nav {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 1;
+    }
 
-      nav {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        z-index: 1;
-      }
+    nav a {
+      margin-right: 15px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 6px 10px;
+      border-radius: 4px;
+    }
 
-      nav a {
-        margin-right: 15px;
-        color: #fff;
-        text-decoration: none;
-        font-weight: bold;
-        background: rgba(0, 0, 0, 0.5);
-        padding: 6px 10px;
-        border-radius: 4px;
-      }
+    .chat-container {
+      position: relative;
+      margin: 100px auto;
+      max-width: 600px;
+      background: rgba(0,0,0,0.75);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255,255,255,0.2);
+    }
 
-      nav a:hover {
-        background: rgba(255, 255, 255, 0.3);
-      }
+    #messages {
+      height: 220px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 10px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin-bottom: 10px;
+    }
 
-      .content {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.6);
-        padding: 30px;
-        border-radius: 12px;
-        text-align: center;
-        max-width: 600px;
-      }
+    input, button {
+      padding: 8px;
+      margin: 4px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+    }
 
-      .content h2 {
-        margin-bottom: 15px;
-      }
+    input {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
 
-      .content ol {
-        text-align: left;
-        margin: 0 auto 20px;
-      }
+    button {
+      background: white;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-      .enter-button a,
-      .cloak-button button {
-        background-color: black;
-        color: white;
-        padding: 10px 20px;
-        text-decoration: none;
-        font-weight: bold;
-        border-radius: 5px;
-        border: 2px solid white;
-        cursor: pointer;
-        margin-top: 10px;
-        transition: background-color 0.3s, color 0.3s;
-      }
+    .admin-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: white;
+      color: black;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-      .enter-button a:hover,
-      .cloak-button button:hover {
-        background-color: white;
-        color: black;
-      }
-    </style>
-  </head>
+    .admin-controls {
+      display: flex;
+      gap: 5px;
+      margin-top: 4px;
+    }
 
-  <body>
-    <video id="bg-video" autoplay muted loop playsinline>
-      <source src="falling_particles_looping.mp4" type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
+    .edit-btn {
+      background: #ffd700;
+      color: black;
+    }
 
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="about.html">About</a>
-      <a href="projects.html">Projects</a>
-    </nav>
+    .delete-btn {
+      background: #ff4444;
+      color: white;
+    }
 
-    <div class="content">
-      <h2>How to Play Minecraft</h2>
-      <ol>
-        <li>Click about:blank cloak</li>
-        <li>Press Search History Byp@ss</li>
-        <li>Search <strong>eagle craft x13</strong></li>
-        <li>Click the <strong>WASM 1.8.8</strong> version</li>
-      </ol>
+    #admin-modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
 
-      <div class="enter-button">
-        <a href="projects.html">Click to Enter</a>
-      </div>
+    #admin-modal-content {
+      background: #222;
+      padding: 20px;
+      border-radius: 8px;
+      width: 300px;
+      text-align: center;
+    }
 
-      <div class="cloak-button">
-        <button onclick="cloakTab()">
-          Press to Cloak Tab (makes it so teachers can't see it on
-          GoGuardian, IT WILL SHOW THEM THE LAST TAB YOU WERE ON THAT WAS
-          NOT CLOAKED!)
-        </button>
-      </div>
+    #clearBtn {
+      display: none;
+      margin-top: 10px;
+      background: white;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+  <video id="bg-video" autoplay muted loop playsinline>
+    <source src="falling_particles_looping.mp4" type="video/mp4" />
+  </video>
 
-      <!-- 🔹 Chat Room UI -->
-      <div style="margin-top: 40px; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 10px;">
-        <h3>Live Chat Room</h3>
-        <div id="messages" style="height: 200px; overflow-y: auto; border: 1px solid #fff; padding: 10px; margin-bottom: 10px;"></div>
-        <input type="text" id="name" placeholder="Name" style="width: 30%; padding: 5px;" />
-        <input type="text" id="message" placeholder="Message" style="width: 50%; padding: 5px;" />
-        <button onclick="sendMessage()" style="padding: 6px 10px;">Send</button>
-      </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="projects.html">Projects</a>
+  </nav>
+
+  <div class="chat-container">
+    <button class="admin-btn" onclick="document.getElementById('admin-modal').style.display='flex'">⚙️ Admin Panel</button>
+    <h3 style="text-align:center;">💬 Live Chat Room</h3>
+
+    <div id="messages"></div>
+
+    <div style="text-align: center;">
+      <input id="name" placeholder="Name" />
+      <input id="message" placeholder="Message" />
+      <button onclick="sendMessage()">Send</button>
     </div>
 
-    <!-- Firebase Chat Script -->
-    <script type="module" src="chat.js"></script>
+    <button id="clearBtn" onclick="clearMessages()">🧹 Clear All Messages</button>
+  </div>
 
-    <script>
-      function cloakTab() {
-        var win = window.open();
-        var url = "https://rehspr.github.io/snow/index.html";
-        if (url) {
-          var iframe = document.createElement("iframe");
-          iframe.style.border = "none";
-          iframe.style.width = "100%";
-          iframe.style.height = "100%";
-          iframe.style.margin = "0";
-          win.document.body.style.margin = "0";
-          win.document.body.style.height = "100vh";
-          win.document.body.appendChild(iframe);
-          iframe.src = url;
-        }
+  <!-- Admin Login Modal -->
+  <div id="admin-modal">
+    <div id="admin-modal-content">
+      <h3>Admin Login</h3>
+      <input id="adminUser" placeholder="Username"><br>
+      <input id="adminPass" type="password" placeholder="Password"><br>
+      <button onclick="loginAdmin()">Login</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, push, onChildAdded, remove, update, onChildChanged, onChildRemoved } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCsACxbiTQf6D6KrCS6vfGfaGBkTne9sTk",
+      authDomain: "snow-github-chat-room.firebaseapp.com",
+      databaseURL: "https://snow-github-chat-room-default-rtdb.firebaseio.com",
+      projectId: "snow-github-chat-room",
+      storageBucket: "snow-github-chat-room.firebasestorage.app",
+      messagingSenderId: "1035470861962",
+      appId: "1:1035470861962:web:d8c41e8bcd466872a0df73"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const messagesRef = ref(db, "messages");
+
+    let isAdmin = false;
+
+    function renderMessage(key, data) {
+      const msgDiv = document.createElement("div");
+      msgDiv.id = "msg-" + key;
+      msgDiv.innerHTML = `<strong>${data.name}</strong>: <span id="text-${key}">${data.text}</span>`;
+
+      if (isAdmin) {
+        const controls = document.createElement("div");
+        controls.className = "admin-controls";
+        controls.innerHTML = `
+          <button class="edit-btn" onclick="editMessage('${key}')">Edit</button>
+          <button class="delete-btn" onclick="deleteMessage('${key}')">Delete</button>
+        `;
+        msgDiv.appendChild(controls);
       }
-    </script>
-  </body>
+
+      document.getElementById("messages").appendChild(msgDiv);
+      document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+    }
+
+    onChildAdded(messagesRef, (snapshot) => {
+      renderMessage(snapshot.key, snapshot.val());
+    });
+
+    onChildChanged(messagesRef, (snapshot) => {
+      const key = snapshot.key;
+      document.getElementById("text-" + key).textContent = snapshot.val().text;
+    });
+
+    onChildRemoved(messagesRef, (snapshot) => {
+      const el = document.getElementById("msg-" + snapshot.key);
+      if (el) el.remove();
+    });
+
+    window.sendMessage = function () {
+      const name = document.getElementById("name").value.trim();
+      const text = document.getElementById("message").value.trim();
+      if (name && text) {
+        push(messagesRef, { name, text, timestamp: Date.now() });
+        document.getElementById("message").value = "";
+      }
+    };
+
+    window.loginAdmin = function () {
+      const user = document.getElementById("adminUser").value;
+      const pass = document.getElementById("adminPass").value;
+      if (user === "rehspr" && pass === "rehspr") {
+        isAdmin = true;
+        document.getElementById("admin-modal").style.display = "none";
+        document.getElementById("clearBtn").style.display = "inline-block";
+        document.getElementById("messages").innerHTML = "";
+        // Reload messages to show admin controls
+        onChildAdded(messagesRef, (snapshot) => {
+          renderMessage(snapshot.key, snapshot.val());
+        });
+      } else {
+        alert("Incorrect credentials.");
+      }
+    };
+
+    window.editMessage = function (key) {
+      const current = document.getElementById("text-" + key).textContent;
+      const updated = prompt("Edit message:", current);
+      if (updated !== null) {
+        update(ref(db, `messages/${key}`), { text: updated });
+      }
+    };
+
+    window.deleteMessage = function (key) {
+      if (confirm("Delete this message?")) {
+        remove(ref(db, `messages/${key}`));
+      }
+    };
+
+    window.clearMessages = function () {
+      if (confirm("Clear all messages?")) {
+        remove(messagesRef);
+      }
+    };
+  </script>
+</body>
 </html>
