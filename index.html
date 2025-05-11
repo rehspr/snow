@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Chat with Admin Panel</title>
+  <title>How to Play Minecraft</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body, html {
-      margin: 0;
-      padding: 0;
+      height: 100%;
       font-family: Arial, sans-serif;
       background: black;
       color: white;
@@ -39,23 +39,60 @@
       border-radius: 4px;
     }
 
-    .chat-container {
-      position: relative;
-      margin: 100px auto;
+    .content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.6);
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
       max-width: 600px;
-      background: rgba(0,0,0,0.75);
+    }
+
+    .content h2 { margin-bottom: 15px; }
+    .content ol { text-align: left; margin: 0 auto 20px; }
+
+    .enter-button a,
+    .cloak-button button {
+      background-color: black;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 5px;
+      border: 2px solid white;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .enter-button a:hover,
+    .cloak-button button:hover {
+      background-color: white;
+      color: black;
+    }
+
+    .chat-container {
+      margin-top: 40px;
+      background: rgba(0, 0, 0, 0.75);
       padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(255,255,255,0.2);
+      border-radius: 12px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+      position: relative;
     }
 
     #messages {
       height: 220px;
       overflow-y: auto;
       border: 1px solid #ccc;
+      padding: 10px;
       background: rgba(255,255,255,0.05);
       border-radius: 8px;
-      padding: 10px;
       font-family: monospace;
       white-space: pre-wrap;
       word-wrap: break-word;
@@ -101,15 +138,8 @@
       margin-top: 4px;
     }
 
-    .edit-btn {
-      background: #ffd700;
-      color: black;
-    }
-
-    .delete-btn {
-      background: #ff4444;
-      color: white;
-    }
+    .edit-btn { background: #ffd700; color: black; }
+    .delete-btn { background: #ff4444; color: white; }
 
     #admin-modal {
       position: fixed;
@@ -149,19 +179,38 @@
     <a href="projects.html">Projects</a>
   </nav>
 
-  <div class="chat-container">
-    <button class="admin-btn" onclick="document.getElementById('admin-modal').style.display='flex'">⚙️ Admin Panel</button>
-    <h3 style="text-align:center;">💬 Live Chat Room</h3>
+  <div class="content">
+    <h2>How to Play Minecraft</h2>
+    <ol>
+      <li>Click about:blank cloak</li>
+      <li>Press Search History Byp@ss</li>
+      <li>Search <strong>eagle craft x13</strong></li>
+      <li>Click the <strong>WASM 1.8.8</strong> version</li>
+    </ol>
 
-    <div id="messages"></div>
-
-    <div style="text-align: center;">
-      <input id="name" placeholder="Name" />
-      <input id="message" placeholder="Message" />
-      <button onclick="sendMessage()">Send</button>
+    <div class="enter-button">
+      <a href="projects.html">Click to Enter</a>
     </div>
 
-    <button id="clearBtn" onclick="clearMessages()">🧹 Clear All Messages</button>
+    <div class="cloak-button">
+      <button onclick="cloakTab()">Press to Cloak Tab</button>
+    </div>
+
+    <!-- 🔹 Chat Room UI -->
+    <div class="chat-container">
+      <button class="admin-btn" onclick="document.getElementById('admin-modal').style.display='flex'">⚙️ Admin Panel</button>
+      <h3 style="text-align:center;">💬 Live Chat Room</h3>
+
+      <div id="messages"></div>
+
+      <div style="text-align: center;">
+        <input id="name" placeholder="Name" />
+        <input id="message" placeholder="Message" />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+
+      <button id="clearBtn" onclick="clearMessages()">🧹 Clear All Messages</button>
+    </div>
   </div>
 
   <!-- Admin Login Modal -->
@@ -176,7 +225,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded, remove, update, onChildChanged, onChildRemoved } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getDatabase, ref, push, onChildAdded, remove, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCsACxbiTQf6D6KrCS6vfGfaGBkTne9sTk",
@@ -213,18 +262,14 @@
       document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
     }
 
+    const loadedMessages = new Set();
+
     onChildAdded(messagesRef, (snapshot) => {
-      renderMessage(snapshot.key, snapshot.val());
-    });
-
-    onChildChanged(messagesRef, (snapshot) => {
       const key = snapshot.key;
-      document.getElementById("text-" + key).textContent = snapshot.val().text;
-    });
-
-    onChildRemoved(messagesRef, (snapshot) => {
-      const el = document.getElementById("msg-" + snapshot.key);
-      if (el) el.remove();
+      if (!loadedMessages.has(key)) {
+        loadedMessages.add(key);
+        renderMessage(key, snapshot.val());
+      }
     });
 
     window.sendMessage = function () {
@@ -243,11 +288,23 @@
         isAdmin = true;
         document.getElementById("admin-modal").style.display = "none";
         document.getElementById("clearBtn").style.display = "inline-block";
-        document.getElementById("messages").innerHTML = "";
-        // Reload messages to show admin controls
-        onChildAdded(messagesRef, (snapshot) => {
-          renderMessage(snapshot.key, snapshot.val());
-        });
+
+        // Refresh messages with admin controls
+        const container = document.getElementById("messages");
+        const nodes = Array.from(container.children);
+        for (let div of nodes) {
+          const key = div.id.replace("msg-", "");
+          if (!div.querySelector(".admin-controls")) {
+            const text = document.getElementById("text-" + key).textContent;
+            const controls = document.createElement("div");
+            controls.className = "admin-controls";
+            controls.innerHTML = `
+              <button class="edit-btn" onclick="editMessage('${key}')">Edit</button>
+              <button class="delete-btn" onclick="deleteMessage('${key}')">Delete</button>
+            `;
+            div.appendChild(controls);
+          }
+        }
       } else {
         alert("Incorrect credentials.");
       }
@@ -270,8 +327,28 @@
     window.clearMessages = function () {
       if (confirm("Clear all messages?")) {
         remove(messagesRef);
+        document.getElementById("messages").innerHTML = "";
+        loadedMessages.clear();
       }
     };
+  </script>
+
+  <script>
+    function cloakTab() {
+      const win = window.open();
+      const url = "https://rehspr.github.io/snow/index.html";
+      if (url) {
+        const iframe = document.createElement("iframe");
+        iframe.style.border = "none";
+        iframe.style.width = "100%";
+        iframe.style.height = "100%";
+        iframe.style.margin = "0";
+        win.document.body.style.margin = "0";
+        win.document.body.style.height = "100vh";
+        win.document.body.appendChild(iframe);
+        iframe.src = url;
+      }
+    }
   </script>
 </body>
 </html>
