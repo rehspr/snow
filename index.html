@@ -12,7 +12,7 @@
 
     html, body {
       height: 100%;
-      overflow: hidden;
+      overflow: hidden; /* Prevent scrolling */
       color: white;
     }
 
@@ -23,7 +23,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      z-index: -1;
+      z-index: -1; /* Make sure it's behind the content */
     }
 
     nav {
@@ -129,16 +129,13 @@
       position: absolute;
       top: 10px;
       right: 10px;
-      background: transparent;
+      background: url('admicon.png') no-repeat center center;
+      background-size: contain;
+      width: 40px;
+      height: 40px;
       border: none;
-      padding: 0;
       cursor: pointer;
-    }
-
-    .admin-icon {
-      width: 32px;
-      height: 32px;
-      display: block;
+      z-index: 2;
     }
 
     .admin-controls {
@@ -175,21 +172,6 @@
       background: black;
       color: white;
     }
-
-    .close-btn {
-      background: #444;
-      color: white;
-      padding: 8px 16px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: background-color 0.3s;
-    }
-
-    .close-btn:hover {
-      background-color: #777;
-    }
   </style>
 </head>
 <body>
@@ -222,9 +204,7 @@
     </div>
 
     <div class="chat-container">
-      <button class="admin-btn" onclick="document.getElementById('admin-modal').style.display='flex'">
-        <img src="admicon.png" alt="Admin" class="admin-icon">
-      </button>
+      <button class="admin-btn" onclick="document.getElementById('admin-modal').style.display='flex'"></button>
       <h3 style="text-align:center; color: white;">💬 Live Chat Room</h3>
       
       <div id="messages"></div>
@@ -246,13 +226,14 @@
       <input id="adminUser" placeholder="Username"><br>
       <input id="adminPass" type="password" placeholder="Password"><br>
       <button onclick="loginAdmin()">Login</button>
-      <button class="close-btn" onclick="closeAdminModal()">Close</button> <!-- Close Button -->
+      <button onclick="closeAdminModal()">Cancel</button>
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, remove, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCsACxbiTQf6D6KrCS6vfGfaGBkTne9sTk",
@@ -267,6 +248,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const messagesRef = ref(db, "messages");
+    const auth = getAuth(app);
 
     let isAdmin = false;
     const loadedMessages = new Set();
@@ -324,30 +306,29 @@
     window.loginAdmin = function () {
       const user = document.getElementById("adminUser").value;
       const pass = document.getElementById("adminPass").value;
-      if (user === "rehspr" && pass === "rehspr") {
-        isAdmin = true;
-        document.getElementById("admin-modal").style.display = "none";
-        document.getElementById("clearBtn").style.display = "inline-block";
 
-        for (const key of loadedMessages) {
-          const div = document.getElementById("msg-" + key);
-          if (div && !div.querySelector(".admin-controls")) {
-            const controls = document.createElement("div");
-            controls.className = "admin-controls";
-            controls.innerHTML = ` 
-              <button class="edit-btn" onclick="editMessage('${key}')">Edit</button>
-              <button class="delete-btn" onclick="deleteMessage('${key}')">Delete</button>
-            `;
-            div.appendChild(controls);
+      signInWithEmailAndPassword(auth, user, pass)
+        .then(() => {
+          isAdmin = true;
+          document.getElementById("admin-modal").style.display = "none";
+          document.getElementById("clearBtn").style.display = "inline-block";
+
+          for (const key of loadedMessages) {
+            const div = document.getElementById("msg-" + key);
+            if (div && !div.querySelector(".admin-controls")) {
+              const controls = document.createElement("div");
+              controls.className = "admin-controls";
+              controls.innerHTML = ` 
+                <button class="edit-btn" onclick="editMessage('${key}')">Edit</button>
+                <button class="delete-btn" onclick="deleteMessage('${key}')">Delete</button>
+              `;
+              div.appendChild(controls);
+            }
           }
-        }
-      } else {
-        alert("Incorrect credentials.");
-      }
-    };
-
-    window.closeAdminModal = function () {
-      document.getElementById("admin-modal").style.display = "none";
+        })
+        .catch(() => {
+          alert("Incorrect credentials.");
+        });
     };
 
     window.editMessage = function (key) {
@@ -370,6 +351,10 @@
         document.getElementById("messages").innerHTML = "";
         loadedMessages.clear();
       }
+    };
+
+    window.closeAdminModal = function () {
+      document.getElementById("admin-modal").style.display = "none";
     };
   </script>
 </body>
