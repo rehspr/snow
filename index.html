@@ -398,5 +398,43 @@
       window.open("about:blank", "_blank");
     };
   </script>
+
+  <!-- Instagram Button (Bottom Right Styled) -->
+<a href="https://www.instagram.com/444tylr" target="_blank" class="instagram-link">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/1024px-Instagram_logo_2022.svg.png" alt="Instagram" />
+  444tylr
+</a>
+
+<style>
+  .instagram-link {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-family: Arial, sans-serif;
+    background-color: black;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 14px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 2px solid white;
+    z-index: 1000;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .instagram-link:hover {
+    background-color: white;
+    color: black;
+  }
+
+  .instagram-link img {
+    width: 20px;
+    height: 20px;
+  }
+</style>
+
 </body>
 </html>
