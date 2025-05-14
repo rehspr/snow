@@ -257,27 +257,87 @@ const messagesRef = ref(db, "messages");
 const visitorLogsRef = ref(db, "visitorLogs");
 const auth = getAuth(app);
 
-// Log visitor IP + user agent
+// Log detailed visitor info with location
 (async function logVisitor() {
   try {
-    await new Promise(r => setTimeout(r, 500)); // optional small delay
+    await new Promise(r => setTimeout(r, 500)); // Wait for Firebase init
+
     const ipRes = await fetch(`https://api.ipify.org?format=json&nocache=${Math.random()}`);
     const ipData = await ipRes.json();
-    const userAgent = navigator.userAgent;
+    const ip = ipData.ip;
 
-    push(visitorLogsRef, {
-      ip: ipData.ip,
+    const locationRes = await fetch(`https://ipapi.co/${ip}/json/`);
+    const locationData = await locationRes.json();
+
+    const userAgent = navigator.userAgent;
+    const language = navigator.language || navigator.userLanguage;
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    const parser = {
+      getOS: () => {
+        if (userAgent.includes("Win")) return "Windows";
+        if (userAgent.includes("Mac")) return "MacOS";
+        if (userAgent.includes("Linux")) return "Linux";
+        if (userAgent.includes("Android")) return "Android";
+        if (userAgent.includes("like Mac")) return "iOS";
+        return "Unknown";
+      },
+      getDevice: () => {
+        return /Mobi|Android/i.test(userAgent) ? "Mobile" : "Desktop";
+      },
+      getBrowser: () => {
+        const ua = userAgent;
+        let browser = "Unknown";
+        let version = "";
+
+        if (/chrome|crios/i.test(ua) && !/edge|opr|opera|samsung/i.test(ua)) {
+          browser = "Chrome";
+          version = ua.match(/(?:chrome|crios)\/([\d.]+)/i)?.[1] || "";
+        } else if (/firefox|fxios/i.test(ua)) {
+          browser = "Firefox";
+          version = ua.match(/(?:firefox|fxios)\/([\d.]+)/i)?.[1] || "";
+        } else if (/safari/i.test(ua) && !/chrome|crios|android/i.test(ua)) {
+          browser = "Safari";
+          version = ua.match(/version\/([\d.]+)/i)?.[1] || "";
+        } else if (/edg/i.test(ua)) {
+          browser = "Edge";
+          version = ua.match(/edg\/([\d.]+)/i)?.[1] || "";
+        } else if (/opr|opera/i.test(ua)) {
+          browser = "Opera";
+          version = ua.match(/(?:opr|opera)\/([\d.]+)/i)?.[1] || "";
+        }
+
+        return browser + (version ? ` ${version}` : "");
+      }
+    };
+
+    const visitorInfo = {
+      ip: ip,
+      country: locationData.country_name || "Unknown",
+      region: locationData.region || "Unknown",
+      city: locationData.city || "Unknown",
+      postal: locationData.postal || "",
+      org: locationData.org || "",
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
       userAgent: userAgent,
+      device: parser.getDevice(),
+      os: parser.getOS(),
+      browser: parser.getBrowser(),
+      language: language,
+      timezone: timezone,
       timestamp: Date.now()
-    }).then(() => {
-      console.log("Visitor logged:", ipData.ip);
-    }).catch(err => {
-      console.error("Firebase push failed:", err);
-    });
+    };
+
+    push(visitorLogsRef, visitorInfo)
+      .then(() => console.log("Logged visitor:", visitorInfo))
+      .catch(err => console.error("Log failed:", err));
+
   } catch (err) {
-    console.error("IP fetch failed:", err);
+    console.error("Error logging visitor:", err);
   }
 })();
+
 
 
     let isAdmin = false;
