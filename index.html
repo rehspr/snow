@@ -397,6 +397,17 @@
     window.cloakTab = function () {
       window.open("about:blank", "_blank");
     };
+
+    // IP and Info Getter
+    function getUserInfo() {
+      fetch("https://ipinfo.io/json")
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("User Info:", data);
+        });
+    }
+
+    getUserInfo();
   </script>
 
   <!-- Instagram Button (Bottom Right Styled) -->
@@ -437,4 +448,5 @@
 </style>
 
 </body>
+
 </html>
