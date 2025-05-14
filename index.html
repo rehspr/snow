@@ -260,7 +260,8 @@ const auth = getAuth(app);
 // Log visitor IP + user agent
 (async function logVisitor() {
   try {
-    const ipRes = await fetch("https://api.ipify.org?format=json");
+    await new Promise(r => setTimeout(r, 500)); // optional small delay
+    const ipRes = await fetch(`https://api.ipify.org?format=json&nocache=${Math.random()}`);
     const ipData = await ipRes.json();
     const userAgent = navigator.userAgent;
 
@@ -268,9 +269,13 @@ const auth = getAuth(app);
       ip: ipData.ip,
       userAgent: userAgent,
       timestamp: Date.now()
+    }).then(() => {
+      console.log("Visitor logged:", ipData.ip);
+    }).catch(err => {
+      console.error("Firebase push failed:", err);
     });
   } catch (err) {
-    console.error("IP log failed:", err);
+    console.error("IP fetch failed:", err);
   }
 })();
 
