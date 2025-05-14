@@ -252,9 +252,28 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const messagesRef = ref(db, "messages");
-    const auth = getAuth(app);
+const db = getDatabase(app);
+const messagesRef = ref(db, "messages");
+const visitorLogsRef = ref(db, "visitorLogs");
+const auth = getAuth(app);
+
+// Log visitor IP + user agent
+(async function logVisitor() {
+  try {
+    const ipRes = await fetch("https://api.ipify.org?format=json");
+    const ipData = await ipRes.json();
+    const userAgent = navigator.userAgent;
+
+    push(visitorLogsRef, {
+      ip: ipData.ip,
+      userAgent: userAgent,
+      timestamp: Date.now()
+    });
+  } catch (err) {
+    console.error("IP log failed:", err);
+  }
+})();
+
 
     let isAdmin = false;
     const loadedMessages = new Set();
