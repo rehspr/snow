@@ -239,6 +239,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, remove, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-functions.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCsACxbiTQf6D6KrCS6vfGfaGBkTne9sTk",
@@ -253,19 +254,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const messagesRef = ref(db, "messages");
-    const visitorLogsRef = ref(db, "visitorLogs"); // Visitor logs reference
     const auth = getAuth(app);
-
-    // Log visitor data when page loads (logging user-agent)
-    const visitorId = Date.now(); // Generate a unique visitor ID based on timestamp
-    const visitorData = {
-      visitorId: visitorId,
-      timestamp: Date.now(),
-      userAgent: navigator.userAgent,
-      pageVisited: window.location.pathname
-    };
-
-    push(visitorLogsRef, visitorData);
 
     let isAdmin = false;
     const loadedMessages = new Set();
@@ -362,41 +351,53 @@
       signInWithEmailAndPassword(auth, user, pass)
         .then(() => {
           isAdmin = true;
-          document.getElementById("clearBtn").style.display = "inline-block";
           document.getElementById("admin-modal").style.display = "none";
+          document.getElementById("clearBtn").style.display = "inline-block";
+
+          for (const key of loadedMessages) {
+            const div = document.getElementById("msg-" + key);
+            if (div && !div.querySelector(".admin-controls")) {
+              const controls = document.createElement("div");
+              controls.className = "admin-controls";
+              controls.innerHTML = `
+                <button class="edit-btn" onclick="editMessage('${key}')">Edit</button>
+                <button class="delete-btn" onclick="deleteMessage('${key}')">Delete</button>
+              `;
+              div.appendChild(controls);
+            }
+          }
         })
         .catch((error) => {
           alert("Login failed: " + error.message);
         });
     };
 
-    function cloakTab() {
-      // Your cloaking code
-    }
-
-    function closeAdminModal() {
+    window.closeAdminModal = function () {
       document.getElementById("admin-modal").style.display = "none";
-    }
+    };
 
-    // Functions to edit and delete messages (admin only)
-    function editMessage(key) {
-      const newText = prompt("Edit message:");
-      if (newText) {
-        update(ref(db, 'messages/' + key), { text: newText });
-      }
-    }
-
-    function deleteMessage(key) {
-      if (confirm("Are you sure you want to delete this message?")) {
-        remove(ref(db, 'messages/' + key));
-      }
-    }
-
-    function clearMessages() {
+    window.clearMessages = function () {
       if (confirm("Are you sure you want to clear all messages?")) {
         remove(messagesRef);
       }
-    }
+    };
+
+    window.editMessage = function (key) {
+      const newText = prompt("Edit message:");
+      if (newText !== null) {
+        update(ref(db, "messages/" + key), { text: newText });
+      }
+    };
+
+    window.deleteMessage = function (key) {
+      if (confirm("Are you sure you want to delete this message?")) {
+        remove(ref(db, "messages/" + key));
+      }
+    };
+
+    window.cloakTab = function () {
+      window.open("about:blank", "_blank");
+    };
   </script>
 </body>
 </html>
