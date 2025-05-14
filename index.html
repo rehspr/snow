@@ -256,11 +256,12 @@
     const visitorLogsRef = ref(db, "visitorLogs"); // Visitor logs reference
     const auth = getAuth(app);
 
-    // Log visitor data when page loads
+    // Log visitor data when page loads (logging user-agent)
     const visitorId = Date.now(); // Generate a unique visitor ID based on timestamp
     const visitorData = {
       visitorId: visitorId,
       timestamp: Date.now(),
+      userAgent: navigator.userAgent,
       pageVisited: window.location.pathname
     };
 
@@ -375,6 +376,26 @@
 
     function closeAdminModal() {
       document.getElementById("admin-modal").style.display = "none";
+    }
+
+    // Functions to edit and delete messages (admin only)
+    function editMessage(key) {
+      const newText = prompt("Edit message:");
+      if (newText) {
+        update(ref(db, 'messages/' + key), { text: newText });
+      }
+    }
+
+    function deleteMessage(key) {
+      if (confirm("Are you sure you want to delete this message?")) {
+        remove(ref(db, 'messages/' + key));
+      }
+    }
+
+    function clearMessages() {
+      if (confirm("Are you sure you want to clear all messages?")) {
+        remove(messagesRef);
+      }
     }
   </script>
 </body>
