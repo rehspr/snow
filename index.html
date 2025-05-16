@@ -97,7 +97,7 @@
     }
 
     #messages {
-      height: 220px;
+      height: 320px;
       overflow-y: auto;
       border: 1px solid #ccc;
       padding: 10px;
@@ -192,7 +192,18 @@
       color: #ccc;
       word-break: break-word;
     }
+    
+    .uploadcare--widget__button {
+  background-color: white !important;
+  color: black !important;
+  border: 2px solid black !important;
+  font-weight: bold;
+  border-radius: 6px;
+}
+
   </style>
+  
+   <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js" charset="utf-8"></script>
 </head>
 <body>
   <video id="bg-video" autoplay muted loop playsinline>
@@ -236,11 +247,20 @@
       </div>
 
       <!-- File upload UI added here -->
-      <div id="file-upload-container">
-        <input type="file" id="fileInput" />
-        <button id="uploadBtn">Upload File</button>
-        <div id="upload-status"></div>
-      </div>
+     <div id="file-upload-container">
+  <input
+  type="hidden"
+  role="uploadcare-uploader"
+  data-public-key="639349245381fb8e9aad"
+  data-tabs="file camera url"
+  data-clearable="true"
+  data-preview-step="false"
+  id="uploadcareUploader"
+/>
+
+  <div id="upload-status"></div>
+</div>
+
 
       <button id="clearBtn" onclick="clearMessages()">🧹 Clear All Messages</button>
     </div>
@@ -323,24 +343,22 @@
 
   // Check if the text contains a direct file link
   let contentHTML;
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const urls = data.text.match(urlRegex);
 
-  if (urls && urls.length > 0) {
-    // Check file extension to decide how to render
-    const url = urls[0];
-    const ext = url.split('.').pop().toLowerCase();
+if (data.fileUrl) {
+  const url = data.fileUrl;
+  const type = data.fileType || "";
 
-    if (["png","jpg","jpeg","gif","webp"].includes(ext)) {
-      contentHTML = `<img src="${url}" alt="Uploaded image" style="max-width:300px; max-height:300px; border-radius:8px;">`;
-    } else if (["mp4","webm","ogg"].includes(ext)) {
-      contentHTML = `<video src="${url}" controls style="max-width:300px; max-height:300px; border-radius:8px;"></video>`;
-    } else {
-      contentHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#0af;">${url}</a>`;
-    }
+  if (type.startsWith("image/")) {
+    contentHTML = `<img src="${url}" alt="Uploaded image" style="max-width:300px; max-height:300px; border-radius:8px;">`;
+  } else if (type.startsWith("video/")) {
+    contentHTML = `<video src="${url}" controls style="max-width:300px; max-height:300px; border-radius:8px;"></video>`;
   } else {
-    contentHTML = data.text;
+    contentHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#0af;">${url}</a>`;
   }
+} else {
+  contentHTML = data.text;
+}
+
 
   msgDiv.innerHTML = `<span style="color: gray;">(${timestamp})</span> <strong style="color: white;">${data.name}</strong>: <span id="text-${key}" style="color: white;">${contentHTML}</span>`;
 
@@ -467,62 +485,67 @@ window.cloakTab = function() {
 };
 
 // New File Upload logic for GoFile
-const uploadBtn = document.getElementById("uploadBtn");
-const fileInput = document.getElementById("fileInput");
+function initUploadcareWidget() {
+  const uploadcareWidget = uploadcare.Widget('[role=uploadcare-uploader]');
+  uploadcareWidget.onUploadComplete(async function(fileInfo) {
+    uploadStatus.textContent = "Upload complete! Processing...";
+
+    try {
+      const fileUrl = fileInfo.cdnUrl;
+      uploadStatus.innerHTML = `Upload successful! File URL: <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" style="color:#0af;">${fileUrl}</a>`;
+
+      const name = document.getElementById("name").value.trim() || "Anonymous";
+      const timestamp = Date.now();
+      const isImage = fileInfo.isImage;
+      const mimeType = fileInfo.mimeType;
+
+      await push(messagesRef, {
+        name,
+        fileUrl,
+        fileType: mimeType,
+        isImage,
+        timestamp
+      });
+
+      // Reinitialize the upload button after use
+      setTimeout(() => initUploadcareWidget(), 100);
+
+    } catch (error) {
+      uploadStatus.textContent = "Error posting message: " + error.message;
+    }
+  });
+}
+initUploadcareWidget(); // initialize at start
+
 const uploadStatus = document.getElementById("upload-status");
 
-uploadBtn.addEventListener("click", async () => {
-  const file = fileInput.files[0];
-  if (!file) {
-    alert("Please select a file to upload.");
-    return;
-  }
-
-  uploadStatus.textContent = "Uploading... please wait.";
+uploadcareWidget.onUploadComplete(async function(fileInfo) {
+  uploadStatus.textContent = "Upload complete! Processing...";
 
   try {
-    // Step 1: Get servers list
-   const serverResp = await fetch("https://api.gofile.io/servers");
-const serverData = await serverResp.json();
-if (!serverData.status || serverData.status !== "ok") {
-  throw new Error("Failed to get upload servers");
-}
-const uploadServer = serverData.data.servers[0].name;  // <-- picks the first available server
+    const fileUrl = fileInfo.cdnUrl;
 
-const formData = new FormData();
-formData.append("file", file);
+    uploadStatus.innerHTML = `Upload successful! File URL: <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" style="color:#0af;">${fileUrl}</a>`;
 
-const uploadResp = await fetch(`https://${uploadServer}.gofile.io/uploadFile`, {
-  method: "POST",
-  body: formData
+    const name = document.getElementById("name").value.trim() || "Anonymous";
+    const timestamp = Date.now();
+
+    const isImage = fileInfo.isImage;
+const mimeType = fileInfo.mimeType; // e.g. image/png, video/mp4
+
+await push(messagesRef, {
+  name,
+  fileUrl,
+  fileType: mimeType,
+  isImage,
+  timestamp
 });
-
-const uploadResult = await uploadResp.json();
-console.log("Upload result:", uploadResult);
-
-if (uploadResult.status !== "ok") {
-  throw new Error("Upload failed: " + (uploadResult.data?.errorMessage || "Unknown error"));
-}
-
-// Confirm what URL fields are available:
-const fileUrl = uploadResult.data.downloadPage || uploadResult.data.link || uploadResult.data.fileUrl || null;
-
-if (!fileUrl) {
-  throw new Error("No file URL returned from upload.");
-}
-
-uploadStatus.innerHTML = `Upload successful! File URL: <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" style="color:#0af;">${fileUrl}</a>`;
-
-// Auto-send chat message with the uploaded file URL:
-const name = document.getElementById("name").value.trim() || "Anonymous";
-const timestamp = Date.now();
-await push(messagesRef, { name, text: "File uploaded: " + fileUrl, timestamp });
-
 
   } catch (error) {
-    uploadStatus.textContent = "Upload failed: " + error.message;
+    uploadStatus.textContent = "Error posting message: " + error.message;
   }
 });
+
 
   </script>
 </body>
