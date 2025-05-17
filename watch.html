@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stream Movies & TV</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: white;
+    }
+    header {
+      background-color: #000;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    #toggle-buttons {
+      display: flex;
+      justify-content: center;
+      margin: 1rem 0 0;
+    }
+
+    .toggle-btn {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      background-color: transparent;
+      border: 2px solid #00ff9d;
+      border-right: none;
+      color: #00ff9d;
+      font-weight: bold;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: color 0.3s ease;
+    }
+
+    .toggle-btn:last-child {
+      border-right: 2px solid #00ff9d;
+    }
+
+    .toggle-btn::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background-color: #00ff9d;
+      transition: left 0.3s ease;
+      z-index: 0;
+    }
+
+    .toggle-btn.active::before {
+      left: 0;
+    }
+
+    .toggle-btn span {
+      position: relative;
+      z-index: 1;
+      transition: color 0.3s ease;
+    }
+
+    .toggle-btn.active span {
+      color: black;
+    }
+
+    #search-section {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem;
+    }
+
+    #searchInput {
+      padding: 0.5rem;
+      font-size: 1rem;
+      width: 300px;
+      max-width: 80%;
+      color: #00ff9d;
+      background-color: #111;
+      border: 1px solid #00ff9d;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background-color: #00ff9d;
+      border: none;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #00cc7a;
+    }
+
+    #movies-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 1rem;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+
+    .movie-card {
+      margin: 1rem;
+      width: 180px;
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.2s ease;
+      color: #00ff9d;
+    }
+
+    .movie-card:hover {
+      transform: scale(1.05);
+    }
+
+    .movie-card img {
+      width: 100%;
+      border-radius: 8px;
+    }
+
+    #player-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.95);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #player-container iframe {
+      width: 80%;
+      height: 80%;
+    }
+
+    #close-player {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #00ff9d;
+      color: black;
+      border: none;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-size: 1rem;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    #close-player:hover {
+      background-color: #00cc7a;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Stream Movies & TV Shows</h1>
+  </header>
+
+  <div id="toggle-buttons">
+    <button class="toggle-btn active" onclick="switchType('movie', this)"><span>Movies</span></button>
+    <button class="toggle-btn" onclick="switchType('tv', this)"><span>TV Shows</span></button>
+  </div>
+
+  <section id="search-section">
+    <input type="text" id="searchInput" placeholder="Search by title...">
+    <button onclick="searchMedia()">Search</button>
+  </section>
+
+  <section id="movies-grid">
+    <!-- Cards go here -->
+  </section>
+
+  <div id="player-container">
+    <button id="close-player" onclick="closePlayer()">Close</button>
+    <iframe id="movieFrame" src="" allowfullscreen></iframe>
+  </div>
+
+  <script>
+    const apiKey = '0b192501e1b0251de14dfe6c5059de19';
+    const imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
+    let currentType = 'movie';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchPopular(currentType);
+    });
+
+    function switchType(type, button) {
+      currentType = type;
+      document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      document.getElementById('searchInput').value = '';
+      fetchPopular(currentType);
+    }
+
+    function fetchPopular(type) {
+      const grid = document.getElementById('movies-grid');
+      grid.style.opacity = 0;
+      fetch(`https://api.themoviedb.org/3/${type}/popular?api_key=${apiKey}`)
+        .then(res => res.json())
+        .then(data => {
+          setTimeout(() => {
+            displayMedia(data.results, type);
+            grid.style.opacity = 1;
+          }, 300);
+        })
+        .catch(err => console.error('Fetch error:', err));
+    }
+
+    function searchMedia() {
+      const query = document.getElementById('searchInput').value.trim();
+      if (!query) {
+        fetchPopular(currentType);
+        return;
+      }
+      const grid = document.getElementById('movies-grid');
+      grid.style.opacity = 0;
+      fetch(`https://api.themoviedb.org/3/search/${currentType}?api_key=${apiKey}&query=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+          setTimeout(() => {
+            displayMedia(data.results, currentType);
+            grid.style.opacity = 1;
+          }, 300);
+        })
+        .catch(err => console.error('Search error:', err));
+    }
+
+    function displayMedia(mediaList, type) {
+      const grid = document.getElementById('movies-grid');
+      grid.innerHTML = '';
+      mediaList.forEach(item => {
+        const title = type === 'movie' ? item.title : item.name;
+        const imgSrc = item.poster_path ? imageBaseUrl + item.poster_path : '';
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        card.innerHTML = `
+          <img src="${imgSrc}" alt="${title}">
+          <h3>${title}</h3>
+        `;
+        card.addEventListener('click', () => openPlayer(item.id, type));
+        grid.appendChild(card);
+      });
+    }
+
+    function openPlayer(id, type) {
+      const extraParams = type === 'tv' ? '&autonextepisode=true' : '';
+      const iframeUrl = `https://vidora.su/movie/${id}?autoplay=true&colour=00ff9d&backbutton=https://rehspr.github.io/snow/watch.html&logo=https://vidora.su/logo.png${extraParams}`;
+      document.getElementById('movieFrame').src = iframeUrl;
+      document.getElementById('player-container').style.display = 'flex';
+    }
+
+    function closePlayer() {
+      document.getElementById('movieFrame').src = '';
+      document.getElementById('player-container').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
