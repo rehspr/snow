@@ -241,100 +241,190 @@
   </div>
 
   <script>
-    const apiKey = '0b192501e1b0251de14dfe6c5059de19';
-    const imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
-    let currentType = 'movie';
-    let currentTab = 'trending';
+  const apiKey = '0b192501e1b0251de14dfe6c5059de19';
+  const imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
+  let currentType = 'movie';
+  let currentTab = 'trending';
+  let tvShowData = null;
 
-    document.addEventListener('DOMContentLoaded', () => {
-      fetchMedia(currentType, currentTab);
+  document.addEventListener('DOMContentLoaded', () => {
+    fetchMedia(currentType, currentTab);
+  });
+
+  function switchType(type, button) {
+    currentType = type;
+    document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+    fetchMedia(type, currentTab);
+  }
+
+  function switchTab(tab, button) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+    fetchMedia(currentType, tab);
+  }
+
+ async function fetchMedia(type, category) {
+  try {
+    let url = '';
+
+    if (category === 'trending') {
+      // Correct trending URL:
+      url = `https://api.themoviedb.org/3/trending/${type}/week?api_key=${apiKey}&language=en-US`;
+    } else if (category === 'now_playing') {
+      if (type === 'movie') {
+        url = `https://api.themoviedb.org/3/movie/now_playing?api_key=${apiKey}&language=en-US`;
+      } else {
+        url = `https://api.themoviedb.org/3/tv/on_the_air?api_key=${apiKey}&language=en-US`;
+      }
+    } else {
+      console.error('Unknown category:', category);
+      return;
+    }
+
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error('API response error:', res.status, res.statusText);
+      return;
+    }
+    const data = await res.json();
+    displayMedia(data.results, type);
+  } catch (e) {
+    console.error('Fetch media error:', e);
+  }
+}
+
+
+  function displayMedia(items, type) {
+    const grid = document.getElementById('movies-grid');
+    grid.innerHTML = '';
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'movie-card';
+      card.innerHTML = `
+        <img src="${imageBaseUrl}${item.poster_path}" alt="${item.title || item.name}" />
+        <p>${item.title || item.name}</p>
+      `;
+      card.onclick = () => {
+        type === 'movie' ? playMovie(item.id) : openTVPlayer(item.id, item.name);
+      };
+      grid.appendChild(card);
+    });
+  }
+
+  function playMovie(id) {
+    const iframe = document.getElementById('movieFrame');
+    document.getElementById('player-container').style.display = 'flex';
+    iframe.src = `https://vidsrc.to/embed/movie/${id}`;
+  }
+
+  function closePlayer() {
+    const iframe = document.getElementById('movieFrame');
+    iframe.src = '';
+    document.getElementById('player-container').style.display = 'none';
+  }
+
+  async function searchMedia() {
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) return;
+    const url = `https://api.themoviedb.org/3/search/${currentType}?api_key=${apiKey}&query=${encodeURIComponent(query)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    displayMedia(data.results, currentType);
+  }
+
+  // ------------ TV Show Streaming Logic Replacement ------------
+  async function openTVPlayer(tvShowId, tvShowName) {
+    const res = await fetch(`https://api.themoviedb.org/3/tv/${tvShowId}?api_key=${apiKey}&language=en-US`);
+    const tvData = await res.json();
+    tvShowData = tvData;
+
+    const container = document.getElementById('movies-grid');
+    container.innerHTML = `
+      <h2>${tvData.name}</h2>
+      <p>${tvData.overview}</p>
+      <label for="provider-select">Streaming Provider:</label>
+      <select id="provider-select">
+        <option value="vidora">Vidora</option>
+        <option value="vidsrc">VidSrc</option>
+        <option value="godrive">GoDrivePlayer</option>
+      </select>
+
+      <label for="season-select">Season:</label>
+      <select id="season-select"></select>
+
+      <label for="episode-select">Episode:</label>
+      <select id="episode-select"></select>
+
+      <iframe id="tv-show-player" width="100%" height="500" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+      <button onclick="fetchMedia('tv', currentTab)">Back</button>
+    `;
+
+    await populateSeasons(tvShowId);
+    document.getElementById('provider-select').addEventListener('change', updateTVPlayer);
+    document.getElementById('season-select').addEventListener('change', async () => {
+      await populateEpisodes(tvShowId, document.getElementById('season-select').value);
+    });
+    document.getElementById('episode-select').addEventListener('change', updateTVPlayer);
+  }
+
+  async function populateSeasons(tvShowId) {
+    const seasonSelect = document.getElementById('season-select');
+    seasonSelect.innerHTML = '';
+    tvShowData.seasons.forEach(season => {
+      const option = document.createElement('option');
+      option.value = season.season_number;
+      option.textContent = `Season ${season.season_number}`;
+      seasonSelect.appendChild(option);
+    });
+    if (tvShowData.seasons.length > 0) {
+      seasonSelect.value = tvShowData.seasons[0].season_number;
+      await populateEpisodes(tvShowId, seasonSelect.value);
+    }
+  }
+
+  async function populateEpisodes(tvShowId, seasonNumber) {
+    const response = await fetch(`https://api.themoviedb.org/3/tv/${tvShowId}/season/${seasonNumber}?api_key=${apiKey}&language=en-US`);
+    const data = await response.json();
+    const episodeSelect = document.getElementById('episode-select');
+    episodeSelect.innerHTML = '';
+
+    data.episodes.forEach(episode => {
+      const option = document.createElement('option');
+      option.value = episode.episode_number;
+      option.textContent = `Episode ${episode.episode_number}: ${episode.name}`;
+      episodeSelect.appendChild(option);
     });
 
-    function switchType(type, button) {
-      currentType = type;
-      document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
-      document.getElementById('searchInput').value = '';
-      fetchMedia(currentType, currentTab);
+    if (data.episodes.length > 0) {
+      episodeSelect.value = data.episodes[0].episode_number;
+      updateTVPlayer();
     }
+  }
 
-    function switchTab(tab, button) {
-      currentTab = tab;
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
-      fetchMedia(currentType, currentTab);
+  function updateTVPlayer() {
+    const provider = document.getElementById('provider-select').value;
+    const season = document.getElementById('season-select').value;
+    const episode = document.getElementById('episode-select').value;
+    const iframe = document.getElementById('tv-show-player');
+
+    const providers = {
+      vidora: (id, season, episode) =>
+        `https://vidora.su/tv/${id}/${season}/${episode}?autoplay=true&colour=00ff9d&autonextepisode=true&backbutton=https://rehspr.github.io/snow/watch.html&logo=https://rehspr.github.io/favicon.png`,
+
+      vidsrc: (id, season, episode) =>
+        `https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${season}&episode=${episode}`,
+
+      godrive: (id, season, episode) =>
+        `https://godriveplayer.com/embed/tv?tmdb=${id}&season=${season}&episode=${episode}`
+    };
+
+    if (providers[provider]) {
+      iframe.src = providers[provider](tvShowData.id, season, episode);
     }
+  }
+</script>
 
-    function fetchMedia(type, tab) {
-      const grid = document.getElementById('movies-grid');
-      grid.style.opacity = 0;
-
-      let url;
-      if (tab === 'trending') {
-        url = `https://api.themoviedb.org/3/trending/${type}/week?api_key=${apiKey}`;
-      } else if (tab === 'now_playing') {
-        url = `https://api.themoviedb.org/3/${type}/${type === 'movie' ? 'now_playing' : 'on_the_air'}?api_key=${apiKey}`;
-      }
-
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          setTimeout(() => {
-            displayMedia(data.results, type);
-            grid.style.opacity = 1;
-          }, 300);
-        })
-        .catch(err => console.error('Fetch error:', err));
-    }
-
-    function searchMedia() {
-      const query = document.getElementById('searchInput').value.trim();
-      if (!query) {
-        fetchMedia(currentType, currentTab);
-        return;
-      }
-      const grid = document.getElementById('movies-grid');
-      grid.style.opacity = 0;
-      fetch(`https://api.themoviedb.org/3/search/${currentType}?api_key=${apiKey}&query=${encodeURIComponent(query)}`)
-        .then(res => res.json())
-        .then(data => {
-          setTimeout(() => {
-            displayMedia(data.results, currentType);
-            grid.style.opacity = 1;
-          }, 300);
-        })
-        .catch(err => console.error('Search error:', err));
-    }
-
-    function displayMedia(mediaList, type) {
-      const grid = document.getElementById('movies-grid');
-      grid.innerHTML = '';
-      mediaList.forEach(item => {
-        const title = type === 'movie' ? item.title : item.name;
-        const imgSrc = item.poster_path ? imageBaseUrl + item.poster_path : '';
-        const card = document.createElement('div');
-        card.className = 'movie-card';
-        card.innerHTML = `
-          <img src="${imgSrc}" alt="${title}">
-          <h3>${title}</h3>
-        `;
-        card.addEventListener('click', () => openPlayer(item.id, type));
-        grid.appendChild(card);
-      });
-    }
-
-    function openPlayer(id, type) {
-      const extraParams = type === 'tv' ? '&autonextepisode=true' : '';
-      const iframeUrl = `https://vidora.su/movie/${id}?autoplay=true&colour=00ff9d&backbutton=https://rehspr.github.io/snow/watch.html&logo=https://vidora.su/logo.png${extraParams}`;
-      document.getElementById('movieFrame').src = iframeUrl;
-      document.getElementById('player-container').style.display = 'flex';
-    }
-
-    function closePlayer() {
-      document.getElementById('movieFrame').src = '';
-      document.getElementById('player-container').style.display = 'none';
-    }
-  </script>
 </body>
 </html>
-
