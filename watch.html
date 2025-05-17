@@ -54,6 +54,29 @@
       background-color: rgba(0, 255, 157, 0.1);
     }
 
+    #tabs {
+      display: flex;
+      justify-content: center;
+      margin: 0.5rem auto;
+      gap: 10px;
+    }
+
+    .tab-btn {
+      padding: 0.4rem 0.8rem;
+      border: 2px solid #00ff9d;
+      background: transparent;
+      color: #00ff9d;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .tab-btn.active {
+      background-color: #00ff9d;
+      color: black;
+    }
+
     #search-section {
       display: flex;
       justify-content: center;
@@ -62,32 +85,31 @@
     }
 
     #bg-video {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -1;
-}
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
 
-nav {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 1;
-}
+    nav {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 1;
+    }
 
-nav a {
-  margin-right: 15px;
-  color: #fff;
-  text-decoration: none;
-  font-weight: bold;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 6px 10px;
-  border-radius: 4px;
-}
-
+    nav a {
+      margin-right: 15px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 6px 10px;
+      border-radius: 4px;
+    }
 
     #searchInput {
       padding: 0.5rem;
@@ -110,6 +132,7 @@ nav a {
       border-radius: 4px;
       transition: background-color 0.3s ease;
     }
+
     button:hover {
       background-color: #00cc7a;
     }
@@ -172,6 +195,7 @@ nav a {
       border-radius: 4px;
       transition: background-color 0.3s ease;
     }
+
     #close-player:hover {
       background-color: #00cc7a;
     }
@@ -182,24 +206,26 @@ nav a {
     <h1>Stream Movies & TV Shows</h1>
   </header>
 
-<!-- Add this inside your <body> at the top: -->
+  <video id="bg-video" autoplay muted loop playsinline>
+    <source src="falling_particles_looping.mp4" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
 
-<video id="bg-video" autoplay muted loop playsinline>
-  <source src="falling_particles_looping.mp4" type="video/mp4" />
-  Your browser does not support the video tag.
-</video>
-
-<nav>
-  <a href="index.html">Home</a>
-  <a href="about.html">Updates/proxy</a>
-  <a href="projects.html">Bypasses</a>
-  <a href="watch.html">Watch</a>
-</nav>
-
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">Updates/proxy</a>
+    <a href="projects.html">Bypasses</a>
+    <a href="watch.html">Watch</a>
+  </nav>
 
   <div id="toggle-buttons">
     <button class="toggle-btn active" onclick="switchType('movie', this)"><span>Movies</span></button>
     <button class="toggle-btn" onclick="switchType('tv', this)"><span>TV Shows</span></button>
+  </div>
+
+  <div id="tabs">
+    <button class="tab-btn active" onclick="switchTab('trending', this)">Trending</button>
+    <button class="tab-btn" onclick="switchTab('now_playing', this)">Now Playing</button>
   </div>
 
   <section id="search-section">
@@ -207,9 +233,7 @@ nav a {
     <button onclick="searchMedia()">Search</button>
   </section>
 
-  <section id="movies-grid">
-    <!-- Cards go here -->
-  </section>
+  <section id="movies-grid"></section>
 
   <div id="player-container">
     <button id="close-player" onclick="closePlayer()">Close</button>
@@ -220,9 +244,10 @@ nav a {
     const apiKey = '0b192501e1b0251de14dfe6c5059de19';
     const imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
     let currentType = 'movie';
+    let currentTab = 'trending';
 
     document.addEventListener('DOMContentLoaded', () => {
-      fetchPopular(currentType);
+      fetchMedia(currentType, currentTab);
     });
 
     function switchType(type, button) {
@@ -230,13 +255,28 @@ nav a {
       document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
       button.classList.add('active');
       document.getElementById('searchInput').value = '';
-      fetchPopular(currentType);
+      fetchMedia(currentType, currentTab);
     }
 
-    function fetchPopular(type) {
+    function switchTab(tab, button) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      fetchMedia(currentType, currentTab);
+    }
+
+    function fetchMedia(type, tab) {
       const grid = document.getElementById('movies-grid');
       grid.style.opacity = 0;
-      fetch(`https://api.themoviedb.org/3/${type}/popular?api_key=${apiKey}`)
+
+      let url;
+      if (tab === 'trending') {
+        url = `https://api.themoviedb.org/3/trending/${type}/week?api_key=${apiKey}`;
+      } else if (tab === 'now_playing') {
+        url = `https://api.themoviedb.org/3/${type}/${type === 'movie' ? 'now_playing' : 'on_the_air'}?api_key=${apiKey}`;
+      }
+
+      fetch(url)
         .then(res => res.json())
         .then(data => {
           setTimeout(() => {
@@ -250,7 +290,7 @@ nav a {
     function searchMedia() {
       const query = document.getElementById('searchInput').value.trim();
       if (!query) {
-        fetchPopular(currentType);
+        fetchMedia(currentType, currentTab);
         return;
       }
       const grid = document.getElementById('movies-grid');
@@ -297,3 +337,4 @@ nav a {
   </script>
 </body>
 </html>
+
