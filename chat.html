@@ -1,28 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AI Chat</title>
   <style>
-    /* Full-screen background video */
     body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      font-family: 'Arial', sans-serif;
+      font-family: Arial, sans-serif;
     }
     video.bg {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       object-fit: cover;
       z-index: -1;
     }
-
-    /* Chat container */
     .chat-container {
       position: fixed;
       bottom: 0;
@@ -31,14 +26,13 @@
       width: 100%;
       max-width: 600px;
       height: 80vh;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0,0,0,0.7);
       border-radius: 10px 10px 0 0;
       display: flex;
       flex-direction: column;
       padding: 10px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
-
     .chat-box {
       flex: 1;
       overflow-y: auto;
@@ -47,16 +41,13 @@
       font-size: 16px;
       line-height: 1.5;
     }
-
     .chat-input {
       display: flex;
-      align-items: center;
       border-top: 1px solid #444;
       padding: 10px;
     }
-
     .chat-input textarea {
-      width: 80%;
+      flex: 1;
       padding: 10px;
       border: none;
       border-radius: 10px;
@@ -66,10 +57,9 @@
       font-size: 14px;
       outline: none;
     }
-
     .chat-input button {
       margin-left: 10px;
-      padding: 10px;
+      padding: 10px 16px;
       background: #10a37f;
       border: none;
       border-radius: 10px;
@@ -77,20 +67,18 @@
       cursor: pointer;
       font-size: 14px;
     }
-
     .chat-message {
       margin: 5px 0;
       padding: 10px;
       border-radius: 10px;
       max-width: 80%;
+      word-wrap: break-word;
     }
-
     .user-message {
       background: #10a37f;
       align-self: flex-end;
       border-bottom-right-radius: 0;
     }
-
     .ai-message {
       background: #444;
       align-self: flex-start;
@@ -103,74 +91,68 @@
   <!-- Background video -->
   <video class="bg" autoplay loop muted>
     <source src="falling_particles_looping.mp4" type="video/mp4">
-    Your browser does not support the video tag.
   </video>
 
   <!-- Chat interface -->
   <div class="chat-container">
-    <div class="chat-box" id="chat-box">
-      <!-- Messages will appear here -->
-    </div>
+    <div class="chat-box" id="chat-box"></div>
     <div class="chat-input">
       <textarea id="user-input" placeholder="Type your message..." rows="1"></textarea>
-      <button onclick="sendMessage()">Send</button>
+      <button id="send-btn">Send</button>
     </div>
   </div>
 
   <script>
-    const chatBox = document.getElementById('chat-box');
-    const userInput = document.getElementById('user-input');
+    const chatBox = document.getElementById("chat-box");
+    const userInput = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
 
-    // Append messages
     function appendMessage(content, sender) {
-      const messageDiv = document.createElement('div');
-      messageDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("chat-message", sender === "user" ? "user-message" : "ai-message");
       messageDiv.textContent = content;
       chatBox.appendChild(messageDiv);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // Send message
     async function sendMessage() {
       const message = userInput.value.trim();
       if (!message) return;
 
-      appendMessage(message, 'user');
-      userInput.value = '';
+      appendMessage(message, "user");
+      userInput.value = "";
 
-      const placeholder = 'AI is typing...';
-      appendMessage(placeholder, 'ai');
+      const placeholder = document.createElement("div");
+      placeholder.classList.add("chat-message", "ai-message");
+      placeholder.textContent = "AI is typing...";
+      chatBox.appendChild(placeholder);
+      chatBox.scrollTop = chatBox.scrollHeight;
 
       try {
-        // Call Vercel serverless function
         const response = await fetch("/api/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message })
+          body: JSON.stringify({ message }),
         });
 
         const data = await response.json();
         const aiMessage = data.choices?.[0]?.message?.content || "Error: No response";
 
-        // Replace placeholder with AI's message
-        const aiDiv = chatBox.lastElementChild;
-        aiDiv.textContent = aiMessage;
-
-      } catch (error) {
-        console.error(error);
-        const aiDiv = chatBox.lastElementChild;
-        aiDiv.textContent = "Error: Unable to fetch AI response.";
+        placeholder.textContent = aiMessage;
+      } catch (err) {
+        console.error(err);
+        placeholder.textContent = "Error: Unable to fetch AI response.";
       }
     }
 
-    // Enter key to send
-    userInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && !e.shiftKey) {
+    sendBtn.addEventListener("click", sendMessage);
+
+    userInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         sendMessage();
       }
     });
   </script>
-
 </body>
 </html>
