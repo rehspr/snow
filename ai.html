@@ -11,9 +11,11 @@
       padding: 0;
       overflow: hidden;
       font-family: 'Arial', sans-serif;
+      background: #000;
     }
+
     video.bg {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
       width: 100%;
@@ -31,12 +33,14 @@
       width: 100%;
       max-width: 600px;
       height: 80vh;
-      background: rgba(0, 0, 0, 0.7);
-      border-radius: 10px 10px 0 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 15px 15px 0 0;
       display: flex;
       flex-direction: column;
-      padding: 10px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      padding: 15px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s ease;
     }
 
     .chat-box {
@@ -45,68 +49,119 @@
       padding: 10px;
       color: #fff;
       font-size: 16px;
-      line-height: 1.5;
+      line-height: 1.6;
+      scroll-behavior: smooth;
     }
 
+    /* Message bubbles */
+    .chat-message {
+      margin: 6px 0;
+      padding: 12px 16px;
+      border-radius: 18px;
+      max-width: 75%;
+      word-wrap: break-word;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeInUp 0.3s forwards;
+    }
+
+    .user-message {
+      background: linear-gradient(135deg, #10a37f, #1ed2a0);
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .ai-message {
+      background: rgba(68, 68, 68, 0.9);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Input area */
     .chat-input {
       display: flex;
       align-items: center;
-      border-top: 1px solid #444;
-      padding: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 10px 0 0 0;
     }
 
     .chat-input textarea {
-      width: 80%;
-      padding: 10px;
+      flex: 1;
+      padding: 12px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       resize: none;
-      background: #333;
+      background: rgba(50, 50, 50, 0.8);
       color: #fff;
       font-size: 14px;
       outline: none;
+      transition: background 0.2s ease;
+    }
+
+    .chat-input textarea:focus {
+      background: rgba(70, 70, 70, 0.9);
     }
 
     .chat-input button {
       margin-left: 10px;
-      padding: 10px;
-      background: #10a37f;
+      padding: 12px 18px;
+      background: linear-gradient(135deg, #10a37f, #1ed2a0);
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       color: #fff;
       cursor: pointer;
       font-size: 14px;
+      font-weight: bold;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .chat-message {
-      margin: 5px 0;
-      padding: 10px;
-      border-radius: 10px;
-      max-width: 80%;
+    .chat-input button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(16, 163, 127, 0.6);
     }
 
-    .user-message {
-      background: #10a37f;
-      align-self: flex-end;
-      border-bottom-right-radius: 0;
+    /* AI typing indicator */
+    .typing {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 3px;
+      background-color: #fff;
+      border-radius: 50%;
+      animation: blink 1s infinite;
     }
 
-    .ai-message {
-      background: #444;
-      align-self: flex-start;
-      border-bottom-left-radius: 0;
+    .typing:nth-child(2) { animation-delay: 0.2s; }
+    .typing:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0; }
+      40% { opacity: 1; }
     }
+
+    @media (max-width: 650px) {
+      .chat-container {
+        width: 95%;
+        height: 70vh;
+      }
+    }
+
   </style>
 </head>
 <body>
 
-  <!-- Background video -->
   <video class="bg" autoplay loop muted>
     <source src="falling_particles_looping.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
 
-  <!-- Chat interface -->
   <div class="chat-container">
     <div class="chat-box" id="chat-box"></div>
     <div class="chat-input">
@@ -118,27 +173,31 @@
   <script>
     const chatBox = document.getElementById('chat-box');
     const userInput = document.getElementById('user-input');
-
-    // Netlify function endpoint
     const NETLIFY_FN = 'https://ai-proxy.aurakitty.workers.dev';
 
-    // Append messages to chat
-    function appendMessage(content, sender) {
+    function appendMessage(content, sender, isTyping=false) {
       const messageDiv = document.createElement('div');
       messageDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
-      messageDiv.textContent = content;
+
+      if (isTyping) {
+        messageDiv.innerHTML = '<span class="typing"></span><span class="typing"></span><span class="typing"></span>';
+      } else {
+        messageDiv.textContent = content;
+      }
+
       chatBox.appendChild(messageDiv);
       chatBox.scrollTop = chatBox.scrollHeight;
+      return messageDiv;
     }
 
-    // Send message to Netlify function
     async function sendMessage() {
       const message = userInput.value.trim();
       if (!message) return;
 
       appendMessage(message, 'user');
       userInput.value = '';
-      appendMessage('AI is typing...', 'ai');
+
+      const typingDiv = appendMessage('', 'ai', true);
 
       try {
         const response = await fetch(NETLIFY_FN, {
@@ -148,21 +207,24 @@
         });
 
         const data = await response.json();
-        const aiMessageDiv = chatBox.lastElementChild;
-        aiMessageDiv.textContent = data.reply;
+        typingDiv.textContent = data.reply;
       } catch (err) {
         console.error('Error fetching AI response:', err);
-        const aiMessageDiv = chatBox.lastElementChild;
-        aiMessageDiv.textContent = 'Error: Unable to fetch AI response.';
+        typingDiv.textContent = 'Error: Unable to fetch AI response.';
       }
     }
 
-    // Send message on Enter key (Shift+Enter for newline)
     userInput.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         sendMessage();
       }
+    });
+
+    // Auto-resize textarea
+    userInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
     });
   </script>
 
